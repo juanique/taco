@@ -2,16 +2,20 @@ package main
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/juanique/taco/taco"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 const (
-	screenWidth  = 600
-	screenHeight = 800
+	screenWidth         = 600
+	screenHeight        = 800
+	screenTicksPerFrame = time.Microsecond * 6944
 )
 
 func main() {
+	scene := taco.Scene{H: screenHeight, W: screenWidth}
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		fmt.Println("initializing SDL:", err)
 		return
@@ -35,8 +39,15 @@ func main() {
 	}
 	defer renderer.Destroy()
 
-	rect := sdl.Rect{X: screenWidth / 2, Y: screenHeight / 2, W: 10, H: 10}
+	rect := taco.NewRect(&scene)
+	frames := 1
+
+	fpsTimer := taco.Timer{}
+	capTimer := taco.Timer{}
+	fpsTimer.Start()
 	for {
+		capTimer.Start()
+		frames += 1
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent:
@@ -44,10 +55,35 @@ func main() {
 			}
 		}
 
+		keys := sdl.GetKeyboardState()
+		if keys[sdl.SCANCODE_LEFT] == 1 {
+			rect.Move(-1, 0)
+		}
+		if keys[sdl.SCANCODE_RIGHT] == 1 {
+			rect.Move(1, 0)
+		}
+		if keys[sdl.SCANCODE_UP] == 1 {
+			rect.Move(0, -1)
+		}
+		if keys[sdl.SCANCODE_DOWN] == 1 {
+			rect.Move(0, 1)
+		}
+
 		renderer.SetDrawColor(255, 200, 200, 255)
 		renderer.Clear()
-		renderer.SetDrawColor(0, 0, 0, 255)
-		renderer.DrawRect(&rect)
+		rect.Draw(renderer)
 		renderer.Present()
+		frameTicks := capTimer.GetTicks()
+		if frameTicks < screenTicksPerFrame {
+			delay := screenTicksPerFrame - frameTicks
+			sdl.Delay(uint32(delay.Milliseconds()))
+		}
+
+		if fpsTimer.GetTicks() > 1*time.Second {
+			fps := float64(frames) / fpsTimer.GetTicks().Seconds()
+			fmt.Printf("%.2f FPS\n", fps)
+			fpsTimer.Reset()
+			frames = 0
+		}
 	}
 }
