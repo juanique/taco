@@ -39,51 +39,6 @@ func main() {
 	}
 	defer renderer.Destroy()
 
-	rect := taco.NewRect(&scene)
-	frames := 1
-
-	fpsTimer := taco.Timer{}
-	capTimer := taco.Timer{}
-	fpsTimer.Start()
-	for {
-		capTimer.Start()
-		frames += 1
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
-			case *sdl.QuitEvent:
-				return
-			}
-		}
-
-		keys := sdl.GetKeyboardState()
-		if keys[sdl.SCANCODE_LEFT] == 1 {
-			rect.Move(-1, 0)
-		}
-		if keys[sdl.SCANCODE_RIGHT] == 1 {
-			rect.Move(1, 0)
-		}
-		if keys[sdl.SCANCODE_UP] == 1 {
-			rect.Move(0, -1)
-		}
-		if keys[sdl.SCANCODE_DOWN] == 1 {
-			rect.Move(0, 1)
-		}
-
-		renderer.SetDrawColor(255, 200, 200, 255)
-		renderer.Clear()
-		rect.Draw(renderer)
-		renderer.Present()
-		frameTicks := capTimer.GetTicks()
-		if frameTicks < screenTicksPerFrame {
-			delay := screenTicksPerFrame - frameTicks
-			sdl.Delay(uint32(delay.Milliseconds()))
-		}
-
-		if fpsTimer.GetTicks() > 1*time.Second {
-			fps := float64(frames) / fpsTimer.GetTicks().Seconds()
-			fmt.Printf("%.2f FPS\n", fps)
-			fpsTimer.Reset()
-			frames = 0
-		}
-	}
+	game := taco.Game{}
+	game.Run(renderer, scene)
 }
