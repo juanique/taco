@@ -2,7 +2,6 @@ package taco
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -68,24 +67,4 @@ func NewRect(scene Scene) Rect {
 	r.W = 10
 	r.Color = Black
 	return r
-}
-
-type FPSCounter struct {
-	frames int64
-	timer  Timer
-}
-
-func (fpsCounter *FPSCounter) Update(state *WorldState) {
-	if !fpsCounter.timer.Started {
-		fpsCounter.timer.Start()
-	}
-
-	fpsCounter.frames += 1
-
-	if fpsCounter.timer.GetTicks() > 1*time.Second {
-		fps := float64(fpsCounter.frames) / fpsCounter.timer.GetTicks().Seconds()
-		fmt.Printf("%.2f FPS\n", fps)
-		fpsCounter.timer.Reset()
-		fpsCounter.frames = 0
-	}
 }

@@ -33,8 +33,9 @@ func (g *Game) Run(renderer *sdl.Renderer, scene Scene) {
 	rect := NewRect(scene)
 	engine.AddDrawable(&rect)
 
-	fpsCounter := FPSCounter{}
+	fpsCounter := NewFPSCounter()
 	engine.AddUpdateable(&fpsCounter)
+	engine.AddDrawable(&fpsCounter)
 
 	player := PlayerController{entity: &rect}
 	engine.AddUpdateable(&player)

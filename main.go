@@ -6,6 +6,7 @@ import (
 
 	"github.com/juanique/taco/taco"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/ttf"
 )
 
 const (
@@ -18,6 +19,11 @@ func main() {
 	scene := taco.Scene{H: screenHeight, W: screenWidth}
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		fmt.Println("initializing SDL:", err)
+		return
+	}
+
+	if err := ttf.Init(); err != nil {
+		fmt.Println("initializing SDL_FONT:", err)
 		return
 	}
 
