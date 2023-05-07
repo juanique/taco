@@ -1,23 +1,27 @@
-package taco
+package components
 
 import (
 	"fmt"
 	"time"
 
+	"github.com/juanique/taco/taco/core"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 type FPSCounter struct {
 	frames int64
-	timer  Timer
+	timer  core.Timer
 	fps    float64
 	period time.Duration
-	text   Text
+
+	// Owned
+	pos  *Position
+	text *Text
 }
 
-func NewFPSCounter() FPSCounter {
-	return FPSCounter{
-		text: NewText("0 FPS", TextOpts{}),
+func NewFPSCounter() *FPSCounter {
+	return &FPSCounter{
+		text: NewText(NewPosition(core.Vector2{}), TextOpts{}),
 	}
 }
 
@@ -25,7 +29,7 @@ func (fpsCounter *FPSCounter) Destroy() {
 	fpsCounter.text.Destroy()
 }
 
-func (fpsCounter *FPSCounter) Update(state *WorldState) {
+func (fpsCounter *FPSCounter) Update() error {
 	if !fpsCounter.timer.Started {
 		fpsCounter.timer.Start()
 	}
@@ -41,9 +45,13 @@ func (fpsCounter *FPSCounter) Update(state *WorldState) {
 		fpsCounter.timer.Reset()
 		fpsCounter.frames = 0
 	}
+
+	return nil
 }
 
-func (fpsCounter *FPSCounter) Draw(renderer *sdl.Renderer) {
-	fpsCounter.text.Message = fmt.Sprintf("%.0f FPS", fpsCounter.fps)
+func (fpsCounter *FPSCounter) Draw(renderer *sdl.Renderer) error {
+	fpsCounter.text.Msg = fmt.Sprintf("%.0f FPS", fpsCounter.fps)
 	fpsCounter.text.Draw(renderer)
+
+	return nil
 }

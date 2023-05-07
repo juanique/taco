@@ -3,65 +3,32 @@ package taco
 import (
 	"time"
 
+	"github.com/juanique/taco/taco/components"
+	"github.com/juanique/taco/taco/core"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 const screenTicksPerFrame = time.Microsecond * 6944
 
-type Drawable interface {
-	Draw(*sdl.Renderer)
-}
-
-type Updateable interface {
-	Update(*WorldState)
-}
-
-type InputState struct {
-	keyboardState []uint8
-}
-
-func (s InputState) KeyPressed(keyCode uint8) bool {
-	return s.keyboardState[keyCode] == 1
-}
-
-func (s *InputState) Update(state []uint8) {
-	s.keyboardState = state
-}
-
-type WorldState struct {
-	InputState InputState
-}
-
 type Engine struct {
-	renderer *sdl.Renderer
-	scene    Scene
+	renderer   *sdl.Renderer
+	scene      core.Scene
+	components []components.Component
+	Stopped    bool
 
 	// Cap to ~144fps
-	capTimer Timer
-
-	// Renderable entities
-	drawableEntities []Drawable
-
-	// Objects that are updated each frame
-	updatebleEntities []Updateable
-
-	Stopped    bool
-	WorldState WorldState
+	capTimer core.Timer
 }
 
-func NewEngine(renderer *sdl.Renderer, scene Scene) Engine {
+func NewEngine(renderer *sdl.Renderer, scene core.Scene) Engine {
 	return Engine{
 		renderer: renderer,
 		scene:    scene,
 	}
 }
 
-func (eng *Engine) AddDrawable(entity Drawable) {
-	eng.drawableEntities = append(eng.drawableEntities, entity)
-}
-
-func (eng *Engine) AddUpdateable(entity Updateable) {
-	eng.updatebleEntities = append(eng.updatebleEntities, entity)
+func (eng *Engine) AddComponent(component components.Component) {
+	eng.components = append(eng.components, component)
 }
 
 func (eng *Engine) Update() {
@@ -74,16 +41,14 @@ func (eng *Engine) Update() {
 		}
 	}
 
-	eng.WorldState.InputState.Update(sdl.GetKeyboardState())
 	eng.renderer.SetDrawColor(255, 200, 200, 255)
 	eng.renderer.Clear()
 
-	for _, entity := range eng.updatebleEntities {
-		entity.Update(&eng.WorldState)
+	for _, component := range eng.components {
+		component.Update()
 	}
-
-	for _, entity := range eng.drawableEntities {
-		entity.Draw(eng.renderer)
+	for _, component := range eng.components {
+		component.Draw(eng.renderer)
 	}
 
 	eng.renderer.Present()

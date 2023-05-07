@@ -1,44 +1,71 @@
 package taco
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"github.com/juanique/taco/taco/components"
+	"github.com/juanique/taco/taco/core"
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 type Game struct {
 }
 
-type PlayerController struct {
-	entity IPhysicalEntity
+type Player struct {
+	// Not owned
+	input *components.Input
+
+	// Owned
+	pos    *components.Position
+	entity *components.Rect
 }
 
-func (p *PlayerController) Update(state *WorldState) {
-	movement := Vector2{}
-	if state.InputState.KeyPressed(sdl.SCANCODE_LEFT) {
+type PlayerOpts struct {
+	Pos core.Vector2
+}
+
+func NewPlayer(input *components.Input, opts PlayerOpts) *Player {
+	pos := components.NewPosition(opts.Pos)
+	entity := components.NewRect(pos, components.RectOpts{})
+
+	return &Player{
+		input:  input,
+		pos:    pos,
+		entity: entity,
+	}
+}
+
+func (p *Player) Update() error {
+	movement := core.Vector2{}
+	if p.input.KeyPressed(sdl.SCANCODE_LEFT) {
 		movement.X -= 1
 	}
-	if state.InputState.KeyPressed(sdl.SCANCODE_RIGHT) {
+	if p.input.KeyPressed(sdl.SCANCODE_RIGHT) {
 		movement.X += 1
 	}
-	if state.InputState.KeyPressed(sdl.SCANCODE_UP) {
+	if p.input.KeyPressed(sdl.SCANCODE_UP) {
 		movement.Y -= 1
 	}
-	if state.InputState.KeyPressed(sdl.SCANCODE_DOWN) {
+	if p.input.KeyPressed(sdl.SCANCODE_DOWN) {
 		movement.Y += 1
 	}
 
-	p.entity.Move(movement)
+	p.pos.Move(movement)
+	return nil
 }
 
-func (g *Game) Run(renderer *sdl.Renderer, scene Scene) {
+func (p *Player) Draw(renderer *sdl.Renderer) error {
+	return p.entity.Draw(renderer)
+}
+
+func (g *Game) Run(renderer *sdl.Renderer, scene core.Scene) {
 	engine := NewEngine(renderer, scene)
 
-	rect := NewRect(scene)
-	engine.AddDrawable(&rect)
+	input := components.NewInput()
+	fpsCounter := components.NewFPSCounter()
+	player := NewPlayer(input, PlayerOpts{Pos: core.Vector2{X: scene.W / 2, Y: scene.H / 2}})
 
-	fpsCounter := NewFPSCounter()
-	engine.AddUpdateable(&fpsCounter)
-	engine.AddDrawable(&fpsCounter)
-
-	player := PlayerController{entity: &rect}
-	engine.AddUpdateable(&player)
+	engine.AddComponent(input)
+	engine.AddComponent(fpsCounter)
+	engine.AddComponent(player)
 
 	engine.Run()
 }

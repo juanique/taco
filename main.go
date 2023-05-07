@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/juanique/taco/taco"
+	"github.com/juanique/taco/taco/core"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -16,7 +17,7 @@ const (
 )
 
 func main() {
-	scene := taco.Scene{H: screenHeight, W: screenWidth}
+	scene := core.Scene{H: screenHeight, W: screenWidth}
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		fmt.Println("initializing SDL:", err)
 		return
